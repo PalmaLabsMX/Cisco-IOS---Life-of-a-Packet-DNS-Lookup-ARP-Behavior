@@ -1,16 +1,21 @@
-# Cisco IOS - Life of a Packet DNS Lookup and ARP Behavior
+# Cisco IOS - Life of a Packet: DNS Lookup and ARP Behavior
 In this lab, I have built and configured from scratch a simple network in Cisco Packet Tracer to demonstrate how the Domain Name System and Address Resolution Protocol work together across different subnets.
 
-## Network Topology:
+## Network Topology
 <img width="1560" height="563" alt="imagen" src="https://github.com/user-attachments/assets/52bc1270-cf45-417e-8b81-1476ce94dd93" />
 
-The topology above shows a very simple interconnected network that is actually divided into three subnets, without counting the point-to-point link between the routers. 
+The topology above shows an interconnected network divided into three LAN subnets plus a point-to-point (P2P) link connecting the two routers.
 
-My goal here is to show how DNS and ARP work together across these networks when Host A wants to send a packet to the web servers's FQDN in the top right, and also how the packet is held and forwarded by the devices until it reaches the server.
-This lab is very useful to understand the life of a packet and see how MAC addresses change with every hop, while IP addresses remain the same.
+## Objective
 
-Please find the CLI configuration of each device below:
+My goal is to illustrate the complete **life of a packet** when **Host A** initiates communication with the web server's FQDN (webserver.com). This project details:
+- How DNS resolution maps hostnames to IP addresses
+- How ARP resolves Next-Hop MAC addresses dynamically
+- How Layer 2 framing changes at every hop while Layer 3 IP headers remain intact end-to-end
 
+## Device Configurations
+
+Below you can find the CLI configuration snippet for each device:
 
 ### Router R1
 ```
@@ -199,7 +204,30 @@ TCP Ports 80 and 443 for web traffic are listening on the server
 
 <img width="712" height="230" alt="imagen" src="https://github.com/user-attachments/assets/ecb2fdb0-ef99-4170-a91b-c24dd85cc4a6" />
 
- 
+## DNS & ARP requests 
+
+- **Host A** which has the IP 10.10.10.10 belongs to the pink 10.10.10.0/24 subnet, and wants to send a packet to the FQDN `webserver.com` at 10.10.12.10, but initially it doesn't know the destination IP address, so it will hold the original packet and send a DNS request to its DNS server at 10.10.100.10 (the DNS server is already configured at this point)
+- **Host A** knows that its own IP address is on a different subnet of the DNS server's IP address, and that's why the DNS request needs to be sent via router R1
+- **Host A** will hold the DNS request and first send a broadcast ARP request to the switch SW1 looking for its default gateway MAC address
+
+<img width="703" height="276" alt="imagen" src="https://github.com/user-attachments/assets/cfac433c-4419-40ab-ac38-80dcd93da02f" /> 
+
+- In this point, the broadcast ARP request is received by the switch SW1
+- SW1 then will add an entry in its MAC address table maping Host A's MAC address 0007.EC96.2DE8 to port Fa0/1, so it knows that Host A is reachable through this port
+
+<img width="321" height="107" alt="imagen" src="https://github.com/user-attachments/assets/43652338-237e-4254-8987-2d0e92b8ecb4" />
+
+- Finally SW1 will flood the broadcast traffic out all ports apart from the one it was received on (SW1 do this because FFFF.FFFF.FFF is the layer 2 broadcast address, it means "send the traffic everywhere")
+
+
+
+
+
+
+
+
+
+
 
 
 
